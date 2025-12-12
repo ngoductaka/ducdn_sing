@@ -12,6 +12,11 @@ import { semanticLight, semanticDark } from './semantic';
  */
 export const vars = createGlobalTheme(':root', {
   colors: {
+    // Basic colors
+    black: semanticLight.colors.black,
+    white: semanticLight.colors.white,
+    transparent: semanticLight.colors.transparent,
+
     background: {
       primary: semanticLight.colors.background.primary,
       secondary: semanticLight.colors.background.secondary,
@@ -67,6 +72,9 @@ export const vars = createGlobalTheme(':root', {
  */
 export const lightTheme = createTheme(vars, {
   colors: {
+    black: semanticLight.colors.black,
+    white: semanticLight.colors.white,
+    transparent: semanticLight.colors.transparent,
     background: semanticLight.colors.background,
     text: semanticLight.colors.text,
     border: semanticLight.colors.border,
@@ -88,6 +96,9 @@ export const lightTheme = createTheme(vars, {
  */
 export const darkTheme = createTheme(vars, {
   colors: {
+    black: semanticDark.colors.black,
+    white: semanticDark.colors.white,
+    transparent: semanticDark.colors.transparent,
     background: semanticDark.colors.background,
     text: semanticDark.colors.text,
     border: semanticDark.colors.border,

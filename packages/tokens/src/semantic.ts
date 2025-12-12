@@ -7,9 +7,14 @@ import { colors as primitiveColors, spacing, typography } from './tokens';
 
 export const semanticLight = {
   colors: {
+    // Basic colors
+    black: primitiveColors.black,
+    white: primitiveColors.white,
+    transparent: primitiveColors.transparent,
+
     background: {
       primary: primitiveColors.neutral[50],
-      secondary: '#ffffff',
+      secondary: primitiveColors.white,
       tertiary: primitiveColors.neutral[100],
       inverse: primitiveColors.neutral[900],
     },
@@ -50,6 +55,11 @@ export const semanticLight = {
 
 export const semanticDark = {
   colors: {
+    // Basic colors
+    black: primitiveColors.black,
+    white: primitiveColors.white,
+    transparent: primitiveColors.transparent,
+
     background: {
       primary: primitiveColors.neutral[900],
       secondary: primitiveColors.neutral[800],

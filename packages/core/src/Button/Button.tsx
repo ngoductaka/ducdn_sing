@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import { cx } from '@company/utils';
 import * as styles from './Button.css';
 

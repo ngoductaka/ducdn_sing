@@ -1,9 +1,5 @@
 # Scalable Design System Architecture Proposal
 
-## Enterprise Multi-Product Design System with Strict CSP Compliance
-
----
-
 ## Executive Summary
 
 This proposal outlines a comprehensive architecture for an enterprise-grade design system built on React, utilizing CSS-in-JS with strict Content Security Policy (CSP) compliance. The system is designed to serve multiple products across diverse frameworks while maintaining security, scalability, and exceptional developer experience.
@@ -25,7 +21,7 @@ This proposal outlines a comprehensive architecture for an enterprise-grade desi
 #### Multi-Package Monorepo Architecture
 
 ```
-@company/design-system/
+@company/
 ├── packages/
 │   ├── tokens/              # Design tokens (framework-agnostic)
 │   ├── core/                # Core React components
@@ -48,7 +44,7 @@ This proposal outlines a comprehensive architecture for an enterprise-grade desi
 **Layer 1: Design Tokens (`@company/tokens`)**
 
 - Framework-agnostic JSON/JS token definitions
-- Compiled to multiple outputs: CSS variables, JS objects, SCSS, iOS, Android
+- Compiled to multiple outputs: CSS variables, JS objects, SCSS
 - Single source of truth for all visual properties
 
 ```typescript
@@ -155,10 +151,11 @@ Button.displayName = 'Button';
 
 **For Vue/Angular/Svelte:**
 
-1. **Web Components Wrapper** (standards-based approach)
-   - Compile core components to Web Components using Lit or Stencil
-   - Framework adapters provide typed wrappers
-   - Maintains single source of truth
+**Web Components Wrapper** (standards-based approach)
+
+- Compile core components to Web Components using Lit or Stencil
+- Framework adapters provide typed wrappers
+- Maintains single source of truth
 
 ```typescript
 // packages/web-components/src/button.ts
@@ -183,18 +180,6 @@ export class DSButton extends LitElement {
   }
 }
 ```
-
-2. **Framework-Specific Adapters**
-   - Thin wrappers that consume vanilla core
-   - Each adapter provides framework-native DX
-   - Shared logic remains in vanilla core
-
-**Distribution Strategy:**
-
-- NPM packages with framework-specific entry points
-- CDN for vanilla JS/CSS
-- Tree-shakeable ESM bundles
-- CommonJS for legacy support
 
 ---
 
@@ -250,72 +235,13 @@ export default function transformer(file: FileInfo, api: API) {
 }
 ```
 
-**2. Deprecation Warnings with Runtime Detection**
-
-```typescript
-// packages/react/src/utils/deprecation.ts
-const warnings = new Set<string>();
-
-export function deprecate(
-  componentName: string,
-  oldProp: string,
-  newProp: string,
-  version: string
-) {
-  const key = `${componentName}.${oldProp}`;
-
-  if (!warnings.has(key) && process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `[Design System v${version}] ${componentName}: ` +
-        `The '${oldProp}' prop is deprecated and will be removed in v${version}. ` +
-        `Please use '${newProp}' instead.`
-    );
-    warnings.add(key);
-  }
-}
-
-// Usage in component
-export const Button = ({ style, variant, ...props }: ButtonProps) => {
-  if (style) {
-    deprecate('Button', 'style', 'variant', '3.0.0');
-  }
-
-  const actualVariant = variant || style; // Backwards compatibility
-  // ...
-};
-```
-
-**3. Gradual Migration Strategy**
-
-```typescript
-// Support both old and new APIs during transition period
-export interface ButtonPropsV2 {
-  /** @deprecated Use 'variant' instead */
-  style?: 'primary' | 'secondary';
-  variant?: 'primary' | 'secondary' | 'tertiary';
-}
-
-// Provide migration guide in JSDoc
-/**
- * @migration v2 -> v3
- * Replace 'style' with 'variant':
- * - Before: <Button style="primary" />
- * - After: <Button variant="primary" />
- *
- * Run codemod: npx @company/codemods v2-to-v3
- */
-```
-
 #### **Release Process**
 
 **1. Changesets Workflow**
 
 ```bash
-# Developer adds changeset
 pnpm changeset
 # Select packages changed, type of change (major/minor/patch)
-# Write human-readable description
-
 # On merge to main, changesets bot creates PR with:
 # - Updated versions
 # - Updated CHANGELOG.md
