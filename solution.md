@@ -217,8 +217,7 @@ export class DSButton extends LitElement {
   "version": "2.4.0",
   "peerDependencies": {
     "@company/tokens": "^3.0.0",
-    "@company/vanilla": "^2.0.0",
-    "react": "^17.0.0 || ^18.0.0"
+    "@company/vanilla": "^2.0.0"
   }
 }
 ```
@@ -236,18 +235,16 @@ export default function transformer(file: FileInfo, api: API) {
   const root = j(file.source);
 
   // Transform old 'style' prop to new 'variant' prop
-  root
-    .find(j.JSXElement, { openingElement: { name: { name: 'Button' } } })
-    .forEach((path) => {
-      const attrs = path.value.openingElement.attributes;
-      const styleProp = attrs?.find(
-        (attr) => attr.type === 'JSXAttribute' && attr.name.name === 'style'
-      );
+  root.find(j.JSXElement, { openingElement: { name: { name: 'Button' } } }).forEach(path => {
+    const attrs = path.value.openingElement.attributes;
+    const styleProp = attrs?.find(
+      attr => attr.type === 'JSXAttribute' && attr.name.name === 'style'
+    );
 
-      if (styleProp) {
-        styleProp.name.name = 'variant';
-      }
-    });
+    if (styleProp) {
+      styleProp.name.name = 'variant';
+    }
+  });
 
   return root.toSource();
 }
@@ -698,9 +695,7 @@ export function useSystemTheme() {
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
 
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
   useEffect(() => {
@@ -792,7 +787,7 @@ export const ThemeScript = () => {
         const savedTheme = localStorage.getItem('theme-preference');
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         const theme = savedTheme || systemTheme;
-        
+
         document.documentElement.className = theme === 'dark' ? '${darkTheme}' : '${lightTheme}';
       } catch (e) {}
     })();
@@ -831,16 +826,6 @@ const cspHeader = `
 // The theme script gets a nonce:
 <script nonce={nonce}>...</script>;
 ```
-
-**Key Points for CSP Compliance:**
-
-1. ✅ All CSS generated at build time via Vanilla Extract
-2. ✅ Theme switching via class name changes (no style injection)
-3. ✅ CSS custom properties resolve at runtime without inline styles
-4. ✅ FOUC prevention script uses nonce, not unsafe-inline
-5. ✅ No runtime style generation or manipulation
-
----
 
 ## III. Security & CSP Compliance
 
@@ -950,23 +935,20 @@ export const Button: React.FC<ButtonProps> = ({
 };
 ```
 
-**Forbidden Patterns (Never Do This):**
+**Forbidden Patterns:**
 
 ```typescript
-// ❌ WRONG: Runtime style object (creates inline styles)
+// Runtime style object (creates inline styles)
 <button style={{ backgroundColor: color }}>Click</button>;
 
-// ❌ WRONG: CSS-in-JS with runtime injection (violates CSP)
 const StyledButton = styled.button`
   background-color: ${(props) => props.color};
 `;
 
-// ✅ CORRECT: Build-time CSS with CSS variables
+// Build-time CSS with CSS variables
 const button = style({
-  backgroundColor: vars.colors.action.primary, // CSS var
+  backgroundColor: vars.colors.action.primary,
 });
-
-// ✅ CORRECT: Pre-generated variant classes
 const variants = {
   primary: style({ backgroundColor: vars.colors.action.primary }),
   secondary: style({ backgroundColor: vars.colors.action.secondary }),
@@ -980,7 +962,6 @@ const variants = {
 #### **Strategy 1: CSS Custom Properties for Dynamic Values**
 
 ```typescript
-// packages/vanilla/src/progress/progress.css.ts
 import { style, createVar } from '@vanilla-extract/css';
 import { vars } from '@company/tokens';
 
@@ -1107,10 +1088,10 @@ export const badge = style({
 Avoid inline positioning styles:
 
 ```typescript
-// ❌ WRONG: Inline positioning
+// WRONG: Inline positioning
 <div style={{ gridColumn: `span ${columns}` }}>
 
-// ✅ CORRECT: Pre-generated grid classes
+// CORRECT: Pre-generated grid classes
 export const gridSpans = styleVariants({
   '1': { gridColumn: 'span 1' },
   '2': { gridColumn: 'span 2' },
@@ -1179,10 +1160,7 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     Object.entries(csp)
-      .map(
-        ([key, values]) =>
-          `${key} ${values.join(' ').replace('{RANDOM_NONCE}', nonce)}`
-      )
+      .map(([key, values]) => `${key} ${values.join(' ').replace('{RANDOM_NONCE}', nonce)}`)
       .join('; ')
   );
 
@@ -1197,7 +1175,7 @@ app.use((req, res, next) => {
 export function setupCSPReporting() {
   if (typeof window === 'undefined') return;
 
-  document.addEventListener('securitypolicyviolation', (e) => {
+  document.addEventListener('securitypolicyviolation', e => {
     const violation = {
       blockedURI: e.blockedURI,
       violatedDirective: e.violatedDirective,
@@ -1274,8 +1252,7 @@ export function validateContrast(
 ): { isValid: boolean; ratio: number; required: number } {
   const ratio = getContrastRatio(foreground, background);
 
-  const required =
-    level === 'AAA' ? (isLargeText ? 4.5 : 7) : isLargeText ? 3 : 4.5;
+  const required = level === 'AAA' ? (isLargeText ? 4.5 : 7) : isLargeText ? 3 : 4.5;
 
   return {
     isValid: ratio >= required,
@@ -1333,7 +1310,7 @@ export const Modal: React.FC<ModalProps> = ({
     `modal-desc-${Math.random().toString(36).substr(2, 9)}`
   );
 
-  // ✅ A11y: Focus management
+  // A11y: Focus management
   useEffect(() => {
     if (!isOpen) return;
 
@@ -1346,7 +1323,7 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
-  // ✅ A11y: Keyboard navigation
+  // A11y: Keyboard navigation
   useEffect(() => {
     if (!isOpen || !closeOnEsc) return;
 
@@ -1360,7 +1337,7 @@ export const Modal: React.FC<ModalProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, closeOnEsc, onClose]);
 
-  // ✅ A11y: Prevent body scroll when modal open
+  // A11y: Prevent body scroll when modal open
   useEffect(() => {
     if (!isOpen) return;
 
@@ -1378,12 +1355,12 @@ export const Modal: React.FC<ModalProps> = ({
     <div
       className={styles.overlay}
       onClick={closeOnOverlayClick ? onClose : undefined}
-      // ✅ A11y: Inert background
+      // A11y: Inert background
       aria-hidden='false'
     >
       <FocusTrap
         focusTrapOptions={{
-          // ✅ A11y: Trap focus within modal
+          // A11y: Trap focus within modal
           initialFocus: false,
           returnFocusOnDeactivate: false,
           clickOutsideDeactivates: closeOnOverlayClick,
@@ -1394,7 +1371,7 @@ export const Modal: React.FC<ModalProps> = ({
           onClick={(e) => e.stopPropagation()}
           role='dialog'
           aria-modal='true'
-          // ✅ A11y: Associate title and description
+          // A11y: Associate title and description
           aria-labelledby={titleId.current}
           aria-describedby={descriptionId.current}
         >
@@ -1406,7 +1383,7 @@ export const Modal: React.FC<ModalProps> = ({
             <button
               className={styles.closeButton}
               onClick={onClose}
-              // ✅ A11y: Accessible button label
+              // A11y: Accessible button label
               aria-label='Close dialog'
               type='button'
             >
@@ -1441,7 +1418,7 @@ export const overlay = style({
   justifyContent: 'center',
   zIndex: 1000,
 
-  // ✅ A11y: Respect prefers-reduced-motion
+  // A11y: Respect prefers-reduced-motion
   '@media': {
     '(prefers-reduced-motion: no-preference)': {
       animation: 'fadeIn 200ms ease-out',
@@ -1461,7 +1438,7 @@ export const modal = style({
   overflow: 'auto',
   boxShadow: vars.shadows.xl,
 
-  // ✅ A11y: Focus indicator
+  // A11y: Focus indicator
   ':focus': {
     outline: `${vars.focus.outlineWidth} ${vars.focus.outlineStyle} ${vars.focus.outlineColor}`,
     outlineOffset: vars.focus.outlineOffset,
@@ -1473,7 +1450,7 @@ export const modal = style({
 });
 
 export const closeButton = style({
-  // ✅ A11y: Minimum touch target size
+  // A11y: Minimum touch target size
   minWidth: '44px',
   minHeight: '44px',
   padding: 0,
@@ -1482,13 +1459,13 @@ export const closeButton = style({
   cursor: 'pointer',
   borderRadius: vars.borderRadius.sm,
 
-  // ✅ A11y: High contrast focus
+  // A11y: High contrast focus
   ':focus-visible': {
     outline: `2px solid ${vars.colors.action.primary}`,
     outlineOffset: '2px',
   },
 
-  // ✅ A11y: Clear hover state
+  // A11y: Clear hover state
   ':hover': {
     backgroundColor: vars.colors.background.tertiary,
   },
@@ -1531,7 +1508,7 @@ export const Select: React.FC<SelectProps> = ({
   const selectId = useRef(`select-${Math.random().toString(36).substr(2, 9)}`);
   const listId = useRef(`listbox-${Math.random().toString(36).substr(2, 9)}`);
 
-  // ✅ A11y: Keyboard navigation (ARIA 1.2 compliant)
+  // A11y: Keyboard navigation (ARIA 1.2 compliant)
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case 'Enter':
@@ -1583,7 +1560,7 @@ export const Select: React.FC<SelectProps> = ({
     }
   };
 
-  // ✅ A11y: Scroll focused option into view
+  // A11y: Scroll focused option into view
   useEffect(() => {
     if (isOpen && focusedIndex >= 0) {
       const option = listRef.current?.children[focusedIndex] as HTMLElement;
@@ -1591,7 +1568,7 @@ export const Select: React.FC<SelectProps> = ({
     }
   }, [focusedIndex, isOpen]);
 
-  // ✅ A11y: Close on outside click
+  // A11y: Close on outside click
   useEffect(() => {
     if (!isOpen) return;
 
@@ -1609,13 +1586,13 @@ export const Select: React.FC<SelectProps> = ({
 
   return (
     <div className={styles.selectWrapper}>
-      {/* ✅ A11y: Associated label */}
+      {/* A11y: Associated label */}
       <label htmlFor={selectId.current} className={styles.label}>
         {label}
         {required && <span aria-label='required'> *</span>}
       </label>
 
-      {/* ✅ A11y: Combobox pattern (ARIA 1.2) */}
+      {/* A11y: Combobox pattern (ARIA 1.2) */}
       <button
         ref={triggerRef}
         id={selectId.current}
@@ -1637,7 +1614,7 @@ export const Select: React.FC<SelectProps> = ({
         <ChevronIcon aria-hidden='true' className={styles.chevron} />
       </button>
 
-      {/* ✅ A11y: Error message */}
+      {/* A11y: Error message */}
       {error && (
         <div
           id={`${selectId.current}-error`}
@@ -1648,7 +1625,7 @@ export const Select: React.FC<SelectProps> = ({
         </div>
       )}
 
-      {/* ✅ A11y: Listbox with proper ARIA */}
+      {/* A11y: Listbox with proper ARIA */}
       {isOpen && (
         <ul
           ref={listRef}
@@ -1755,7 +1732,7 @@ const meta: Meta<typeof Modal> = {
   title: 'Components/Modal',
   component: Modal,
   parameters: {
-    // ✅ Configure a11y addon
+    // Configure a11y addon
     a11y: {
       config: {
         rules: [
@@ -1820,12 +1797,9 @@ async function syncFigmaTokens() {
   });
 
   // Write to tokens package
-  await fs.writeFile(
-    'packages/tokens/src/generated/figma.json',
-    JSON.stringify(tokens, null, 2)
-  );
+  await fs.writeFile('packages/tokens/src/generated/figma.json', JSON.stringify(tokens, null, 2));
 
-  console.log('✅ Tokens synced from Figma');
+  console.log('Tokens synced from Figma');
 }
 
 // Run as GitHub Action on Figma webhook
@@ -1848,7 +1822,6 @@ async function syncFigmaTokens() {
    - All size variants
    - Error states
 2. Document in RFC template:
-
    - Use cases
    - Accessibility requirements
    - Interaction patterns
@@ -2004,7 +1977,7 @@ jobs:
   with:
     payload: |
       {
-        "text": "🚀 Design System v${{ steps.version.outputs.version }} released!",
+        "text": "Design System v${{ steps.version.outputs.version }} released!",
         "blocks": [
           {
             "type": "section",
@@ -2078,12 +2051,7 @@ npx @company/codemods v2-to-v3
 New accessible select component with keyboard navigation.
 
 ```tsx
-<Select
-  label='Choose option'
-  options={options}
-  value={value}
-  onChange={setValue}
-/>
+<Select label="Choose option" options={options} value={value} onChange={setValue} />
 ```
 
 See full documentation: https://storybook.company.com
@@ -2128,37 +2096,31 @@ import { StorybookConfig } from '@storybook/react-vite';
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 
 const config: StorybookConfig = {
-    stories: [
-        '../../../packages/react/src//*.stories.@(ts|tsx)',
-        '../stories//*.mdx',
-    ],
-    addons: [
-        '@storybook/addon-essentials',
-        '@storybook/addon-a11y',
-        '@storybook/addon-interactions',
-        '@storybook/addon-links',
-        '@chromatic-com/storybook',
-    ],
-    framework: {
-        name: '@storybook/react-vite',
-        options: {},
-    },
-    async viteFinal(config) {
-        config.plugins = [
-        ...(config.plugins || []),
-        vanillaExtractPlugin(),
-        ];
-        return config;
-    },
-    docs: {
-        autodocs: true,
-    },
+  stories: ['../../../packages/react/src//*.stories.@(ts|tsx)', '../stories//*.mdx'],
+  addons: [
+    '@storybook/addon-essentials',
+    '@storybook/addon-a11y',
+    '@storybook/addon-interactions',
+    '@storybook/addon-links',
+    '@chromatic-com/storybook',
+  ],
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
+  async viteFinal(config) {
+    config.plugins = [...(config.plugins || []), vanillaExtractPlugin()];
+    return config;
+  },
+  docs: {
+    autodocs: true,
+  },
 };
 export default config;
 ```
 
-
 **Theme Switcher in Storybook:**
+
 ```typescript
 // apps/storybook/.storybook/preview.tsx
 import { Preview } from '@storybook/react';
@@ -2178,7 +2140,7 @@ const preview: Preview = {
       },
     },
   },
-  
+
   globalTypes: {
     theme: {
       name: 'Theme',
@@ -2191,11 +2153,11 @@ const preview: Preview = {
       },
     },
   },
-  
+
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme || 'light';
-      
+
       return (
         <ThemeProvider defaultTheme={theme}>
           <div style={{ padding: '2rem' }}>
@@ -2212,9 +2174,10 @@ export default preview;
 
 ---
 
-## VI. Performance & Bundle Size
+## VI. Performance
 
 ### Code Splitting Strategy
+
 ```typescript
 // packages/react/src/index.ts
 
@@ -2228,77 +2191,4 @@ export const DataTable = lazy(() => import('./DataTable/DataTable'));
 
 // Tree-shakeable icons
 export * from '@company/icons';
-```
-
-### Bundle Size Monitoring
-```typescript
-// .github/workflows/bundle-size.yml
-- name: Check bundle size
-  uses: andresz1/size-limit-action@v1
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    
-// package.json
-{
-  "size-limit": [
-    {
-      "path": "packages/react/dist/index.js",
-      "limit": "50 KB"
-    },
-    {
-      "path": "packages/vanilla/dist/styles.css",
-      "limit": "30 KB"
-    }
-  ]
-}
-```
-
----
-
-## VII. Summary & Key Decisions
-
-### Architecture Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| **Vanilla Extract** | Zero-runtime CSS-in-JS, full CSP compliance, type-safe |
-| **Monorepo (Turborepo)** | Shared tooling, coordinated releases, efficient caching |
-| **Framework-agnostic core** | Reusability across React, Vue, Angular, Web Components |
-| **CSS Custom Properties** | Runtime theming without style injection |
-| **Changesets** | Automated versioning, clear changelogs |
-| **Storybook** | Living documentation, visual testing, designer-developer collaboration |
-
-### CSP Compliance Summary
-
-✅ **Achieved through:**
-- Build-time CSS extraction (no runtime injection)
-- CSS Custom Properties for dynamic values
-- Pre-generated style variants
-- Data attributes for conditional styling
-- No inline style attributes (except CSS vars via `assignInlineVars`)
-
-### Success Metrics
-```typescript
-const metrics = {
-  adoption: {
-    target: '80% of products using design system',
-    current: 'Track via package downloads',
-  },
-  
-  quality: {
-    a11yViolations: 'Zero critical violations',
-    testCoverage: '>80%',
-    bundleSize: '<50KB gzipped',
-  },
-  
-  velocity: {
-    timeToShip: '<2 weeks for new components',
-    breakingChanges: '<2 per year',
-  },
-  
-  satisfaction: {
-    developerNPS: '>40',
-    designerNPS: '>40',
-  },
-};
 ```

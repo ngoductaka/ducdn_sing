@@ -18,23 +18,25 @@ export const inputBase = style({
   transition: `all ${durations.fast} ${easings.easeInOut}`,
   outline: 'none',
 
-  '::placeholder': {
-    color: vars.colors.text.disabled,
-  },
+  selectors: {
+    '&::placeholder': {
+      color: vars.colors.text.disabled,
+    },
 
-  ':hover:not(:disabled)': {
-    borderColor: vars.colors.border.strong,
-  },
+    '&:hover:not(:disabled)': {
+      borderColor: vars.colors.border.strong,
+    },
 
-  ':focus': {
-    borderColor: vars.colors.action.primary,
-    boxShadow: `0 0 0 3px ${vars.colors.action.primary}15`,
-  },
+    '&:focus': {
+      borderColor: vars.colors.action.primary,
+      boxShadow: `0 0 0 3px ${vars.colors.action.primary}15`,
+    },
 
-  ':disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-    backgroundColor: vars.colors.background.tertiary,
+    '&:disabled': {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+      backgroundColor: vars.colors.background.tertiary,
+    },
   },
 });
 
